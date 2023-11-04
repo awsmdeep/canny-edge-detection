@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Canny Edge Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('https://img.freepik.com/free-vector/modern-dark-texture-background_1035-11632.jpg?w=1380&t=st=1699090957~exp=1699091557~hmac=299348bcc3c2878c454375c32f48299e24420b6e3e7e36504916c1f897a6f029');
+            background-size: cover;
+            text-align: center;
+            padding: 50px;
+            margin: 0;
+            color: white;
+        }
+
+        h1 {
+            font-size: 8vw;
+            text-transform: uppercase;
+            text-align: center;
+            line-height: 1;
+        }
+
+        .fancy {
+            @supports (background-clip: text) or (-webkit-background-clip: text) {
+                background-image:
+                    url("data:image/svg+xml,%3Csvg width='2250' height='900' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg%3E%3Cpath fill='%2300A080' d='M0 0h2255v899H0z'/%3E%3Ccircle cx='366' cy='207' r='366' fill='%2300FDCF'/%3E%3Ccircle cx='1777.5' cy='318.5' r='477.5' fill='%2300FDCF'/%3E%3Ccircle cx='1215' cy='737' r='366' fill='%23008060'/%3E%3C/g%3E%3C/svg%3E%0A");
+                background-size: 110% auto;
+                background-position: center;
+                color: transparent;
+                -webkit-background-clip: text;
+                background-clip: text;
+            }
+        }
+
+            .upload-box {
+               
+                color: whitesmoke;
+                padding: 20px;
+                cursor: pointer;
+                background-color: rgba(0, 0, 0, 0.864);
+                font-size: 30px;
+                font-weight: 100;
+                border-radius: 50px;
+                box-shadow: whitesmoke 0px 5px 15px;
+            }
+
+            .image-preview {
+                max-width: 100%;
+            }
+
+            .download-link {
+                display: none;
+                margin-top: 20px;
+                background-color:black;
+                color: #ffffff;
+                padding: 10px 20px;
+                text-decoration: none;
+                border-radius: 5px;
+                font-size: 30px;
+                transition: background-color 0.3s; 
+            }
+            .download-link:hover {
+    background-color: #00a080; 
+}
+    </style>
+</head>
+
+<body>
+    <h1><span class="fancy">Canny</span> Edge Detection</h1>
+    <div class="upload-box">
+        <p>Drag and drop an image or click to select one.</p>
+        <input type="file" id="image-input" accept="image/*" style="display: none;">
+        <img src="" id="image-preview" class="image-preview">
+        <a href="#" id="download-link" class="download-link" download="canny_edges.jpg">Download Edges</a>
+    </div>
+
+    <script>
+        const uploadBox = document.querySelector('.upload-box');
+        const imageInput = document.getElementById('image-input');
+        const imagePreview = document.getElementById('image-preview');
+        const downloadLink = document.getElementById('download-link');
+
+        imageInput.addEventListener('change', () => {
+            const file = imageInput.files[0];
+            const imageUrl = URL.createObjectURL(file);
+
+            imagePreview.src = imageUrl;
+
+            downloadLink.style.display = 'none';
+        });
+
+        uploadBox.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadBox.style.border = '2px dashed #ccc';
+        });
+
+        uploadBox.addEventListener('dragleave', () => {
+            uploadBox.style.border = '2px dashed #007BFF';
+        });
+
+        uploadBox.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const file = e.dataTransfer.files[0];
+            const imageUrl = URL.createObjectURL(file);
+
+            imagePreview.src = imageUrl;
+            imageInput.files = e.dataTransfer.files;
+            downloadLink.style.display = 'none';
+        });
+
+        uploadBox.addEventListener('click', () => {
+            imageInput.click();
+        });
+
+        imageInput.addEventListener('input', () => {
+            downloadLink.style.display = 'none';
+        });
+
+        imageInput.addEventListener('change', async () => {
+            const file = imageInput.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('image', file);
+
+                try {
+                    const response = await fetch('/detect_edges', {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const objectURL = URL.createObjectURL(blob);
+                        downloadLink.href = objectURL;
+                        downloadLink.style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
